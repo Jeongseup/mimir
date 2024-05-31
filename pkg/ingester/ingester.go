@@ -68,6 +68,7 @@ import (
 	util_math "github.com/grafana/mimir/pkg/util/math"
 	"github.com/grafana/mimir/pkg/util/shutdownmarker"
 	"github.com/grafana/mimir/pkg/util/spanlogger"
+	"github.com/grafana/mimir/pkg/util/tracing"
 	"github.com/grafana/mimir/pkg/util/validation"
 )
 
@@ -1546,6 +1547,7 @@ func (i *Ingester) QueryExemplars(ctx context.Context, req *client.ExemplarQuery
 
 	spanlog, ctx := spanlogger.NewWithLogger(ctx, i.logger, "Ingester.QueryExemplars")
 	defer spanlog.Finish()
+	ctx = tracing.BridgeOpenTracingToOtel(ctx)
 
 	userID, err := tenant.TenantID(ctx)
 	if err != nil {
@@ -1992,6 +1994,7 @@ func (i *Ingester) QueryStream(req *client.QueryRequest, stream client.Ingester_
 
 	spanlog, ctx := spanlogger.NewWithLogger(stream.Context(), i.logger, "Ingester.QueryStream")
 	defer spanlog.Finish()
+	ctx = tracing.BridgeOpenTracingToOtel(ctx)
 
 	userID, err := tenant.TenantID(ctx)
 	if err != nil {
