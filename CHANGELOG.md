@@ -23,6 +23,8 @@
 
 ### Mixin
 
+* [ENHANCEMENT] Dashboards: Add panels for monitoring ingester autoscaling when not using ingest-storage. These panels are disabled by default, but can be enabled using the `autoscaling.ingester.enabled: true` config option. #8484
+
 ### Jsonnet
 
 * [FEATURE] Add support for automatically deleting compactor, store-gateway and read-write mode backend PVCs when the corresponding StatefulSet is scaled down. #8382
