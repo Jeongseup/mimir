@@ -10,7 +10,7 @@ type queryComponentUtilizationCheck interface {
 }
 
 type queryComponentUtilizationReserveConnections struct {
-	utilization      QueryComponentUtilization
+	utilization      *QueryComponentUtilization
 	connectedWorkers int
 	waitingWorkers   int
 	queueLen         int
@@ -102,7 +102,7 @@ func (qcud *queryComponentUtilizationDequeueSkipOverThreshold) dequeueSelectNode
 
 	if !checkedAllNodesBeforeSkips {
 		// have not made it through first rotation yet
-		currentNodeName := node.queueOrder[node.queuePosition]
+		currentNodeName := qcud.nodeOrder[qcud.currentNodeOrderIndex]
 		if qcud.queryComponentUtilizationThreshold.TriggerUtilizationCheck() {
 			// triggered a utilization check
 			exceedsThreshold, _ := qcud.queryComponentUtilizationThreshold.ExceedsThresholdForComponentName(currentNodeName)
@@ -128,7 +128,7 @@ func (qcud *queryComponentUtilizationDequeueSkipOverThreshold) dequeueSelectNode
 		} else {
 			// no utilization check triggered; select the current node
 			qcud.nodesChecked++
-
+			return node.queueMap[currentNodeName], qcud.checkedAllNodes()
 		}
 	}
 
@@ -169,4 +169,5 @@ func (qcud *queryComponentUtilizationDequeueSkipOverThreshold) dequeueUpdateStat
 	if qcud.currentNodeOrderIndex >= len(qcud.nodeOrder) {
 		qcud.currentNodeOrderIndex = localQueueIndex
 	}
+	qcud.nodesChecked = 0
 }
