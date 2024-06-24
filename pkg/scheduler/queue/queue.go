@@ -121,6 +121,7 @@ type RequestQueue struct {
 	// settings
 	maxOutstandingPerTenant          int
 	additionalQueueDimensionsEnabled bool
+	useIntegratedQueue               bool
 	forgetDelay                      time.Duration
 
 	// metrics for reporting
@@ -177,6 +178,7 @@ func NewRequestQueue(
 	log log.Logger,
 	maxOutstandingPerTenant int,
 	additionalQueueDimensionsEnabled bool,
+	useIntegratedQueue bool,
 	forgetDelay time.Duration,
 	queueLength *prometheus.GaugeVec,
 	discardedRequests *prometheus.CounterVec,
@@ -214,7 +216,7 @@ func NewRequestQueue(
 		waitingQuerierConnsToDispatch: list.New(),
 
 		QueryComponentUtilization: queryComponentCapacity,
-		queueBroker:               newQueueBroker(maxOutstandingPerTenant, additionalQueueDimensionsEnabled, false, forgetDelay),
+		queueBroker:               newQueueBroker(maxOutstandingPerTenant, additionalQueueDimensionsEnabled, useIntegratedQueue, forgetDelay),
 	}
 
 	q.Service = services.NewTimerService(forgetCheckPeriod, q.starting, q.forgetDisconnectedQueriers, q.stop).WithName("request queue")
@@ -356,7 +358,7 @@ func (q *RequestQueue) trySendNextRequestForQuerier(waitingConn *waitingQuerierC
 			exceedsThreshold, queryComponent := q.QueryComponentUtilization.ExceedsThresholdForComponentName(
 				queryComponentName,
 				int(q.connectedQuerierWorkers.Load()),
-				q.queueBroker.tree.rootNode.ItemCount(),
+				q.queueBroker.tree.ItemCount(),
 				q.waitingQuerierConnsToDispatch.Len(),
 			)
 
